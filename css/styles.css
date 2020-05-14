@@ -1,0 +1,54 @@
+#graphics{
+    width: 55%;
+    height: 100%;
+}
+
+#graphicsCanvas{
+    width:100%;
+    height:95%;
+}
+
+#leftMenu{
+    width: 44%;
+    height: 100%;
+    background-color:#FFFFFF;
+}
+
+#navIcons{
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+.container{
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.fullsize{
+    width: 100%;
+    height: 100vh;
+}
+
+html {
+    height: 100%;
+  }
+body {
+    min-height: 100%;
+  }
+
+#leftMenu{
+    overflow: scroll;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+}
+#leftMenu::-webkit-scrollbar {
+    display: none;
+}
+
+#currentSelectedText{
+    margin-left: 20px;
+    margin-right: 20px;
+}
