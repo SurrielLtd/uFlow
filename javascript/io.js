@@ -2,7 +2,7 @@ const path = require('path');
 const XLSX = require('xlsx');
 
 //TODO: Rewrite read functionality for non-node environments
-var excelFile = XLSX.readFile(path.join(__dirname,'../assets/excel/Urban.xlsx'));
+var excelFile = XLSX.readFile(path.join(__dirname,'../assets/excel/Urban_with_requirement.xlsx'));
 var worksheet = excelFile.Sheets['Sheet1'];
 var headers_text = new Object();
 var requirements = [];
@@ -15,14 +15,15 @@ var shapes = [];
 var shapesNodes = new Object();
 
 const parseExcelFile = ()=>{
-    //console.log(worksheet);
+    console.log(worksheet);
     var startCell = XLSX.utils.decode_cell(worksheet['!ref'].split(":")[0]);
     var endCell = XLSX.utils.decode_cell(worksheet['!ref'].split(":")[1]);
-    endCell.c = 3;
+    endCell.c = 4;
     headers_text.type = worksheet[XLSX.utils.encode_cell({'c':0,'r':startCell.r})].v;
     headers_text.subtype = worksheet[XLSX.utils.encode_cell({'c':1,'r':startCell.r})].v;
     headers_text.area = worksheet[XLSX.utils.encode_cell({'c':2,'r':startCell.r})].v;
     headers_text.count = worksheet[XLSX.utils.encode_cell({'c':3,'r':startCell.r})].v;
+    headers_text.specificications = worksheet[XLSX.utils.encode_cell({'c':4,'r':startCell.r})].v;
     headers_text.requiredShape = "Required Shaped";
     var lastType;
     var lastColor;
@@ -43,6 +44,9 @@ const parseExcelFile = ()=>{
         requirement.subtype = worksheet[XLSX.utils.encode_cell({'c':1,'r':r})].v;
         requirement.area = worksheet[XLSX.utils.encode_cell({'c':2,'r':r})].v;
         requirement.count = worksheet[XLSX.utils.encode_cell({'c':3,'r':r})].v;
+        if (worksheet[XLSX.utils.encode_cell({'c':4,'r':r})]){
+            requirement.unparsedConstraints = worksheet[XLSX.utils.encode_cell({'c':4,'r':r})].v; 
+        }
         requirement.color = ColourValues[colorCount++];
         if (colorCount>=ColourValues.length)
             colorCount = 0;
@@ -51,6 +55,32 @@ const parseExcelFile = ()=>{
         totalArea += requirement.area;
         requirements.push(requirement);
     }
+
+    for (i in requirements){
+        if (requirements[i].unparsedConstraints){
+            requirements[i].parsedConstraints = [];
+            let unparsedConstraints = requirements[i].unparsedConstraints.split(";");
+            for (k in unparsedConstraints){
+                let spec = {};
+                spec.text = unparsedConstraints[k]; 
+                let regex = /(\d{1,}) ADJ \[(.*)\]/;
+                spec.amount = spec.text.match(regex)[1];
+                linkedTo = spec.text.match(regex)[2];
+                spec.orList = new Set();
+                for (j in requirements){
+                    if (requirements[j].type.toLowerCase()==linkedTo.toLowerCase() || requirements[j].subtype.toLowerCase()==linkedTo.toLowerCase())
+                        spec.orList.add(requirements[j].subtype);
+                }
+                if (spec.orList.size>0)
+                    requirements[i].parsedConstraints.push(spec);
+/*                 if (spec.orList.size>0)
+                    console.log(`${spec.text} is parsed as ${spec.amount} linked to OR List`,spec.orList);
+                else 
+                    console.log(`Unable to parse ${spec.text}, regex results :`,spec.text.match(regex)); */
+            }
+        }
+    }
+
     console.log("Parsed headers text",headers_text);
     console.log("Parsed requirements",requirements);
     console.log("Start",startCell,"end",endCell);

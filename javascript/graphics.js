@@ -134,7 +134,7 @@ const highlightSelectedShape = (offsetPosition) =>{
         currentlySelectedShape=shape;
         for (i in shapes){
             if (shapes[i].id==shapeId)
-                document.getElementById("currentSelectedText").innerHTML=shapes[i].requirement.subtype;
+                document.getElementById("currentSelectedText").innerHTML=shapes[i].requirement.subtype + " , " + shapes[i].area + " sqm";
         }
         console.log(getTreeNodeDependantIdList(getTreeNode(shapesNodes,shapeId)));
     }else{
